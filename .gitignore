@@ -1,0 +1,9 @@
+# Ignore build output and temporary files
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
