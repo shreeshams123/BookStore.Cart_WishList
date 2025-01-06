@@ -154,8 +154,14 @@ namespace BookStore.Cart_WishList.Services
             {
                 return new Apiresponse<CartDetailsDto>
                 {
-                    Success = false,
-                    Message = "No items found in the cart."
+                    Success = true,
+                    Message = "No items found in the cart.",
+                     Data = new CartDetailsDto
+                     {
+                         CartItems = new List<CartItemDto>(), 
+                         TotalQuantity = 0,
+                         TotalPrice = 0.0m
+                     }
                 };
             }
 
@@ -169,9 +175,9 @@ namespace BookStore.Cart_WishList.Services
                     cartItemDtos.Add(new CartItemDto
                     {
                         BookId = book.BookId,
-                        BookName = book.Title,
+                        title = book.Title,
                         Description = book.Description,
-                        BookImage = book.Image,
+                        Image = book.Image,
                         Author = book.Author,
                         Price = book.Price,
                         Quantity = cartBook.Quantity,

@@ -25,11 +25,44 @@ namespace BookStore.Cart_WishList.Repositories
         {
             if (cart.Id == ObjectId.Empty)
             {
-                cart.Id = ObjectId.GenerateNewId(); 
+                cart.Id = ObjectId.GenerateNewId();
             }
+
             var filter = Builders<Cart>.Filter.Eq(c => c.UserId, cart.UserId);
-            await _cartCollection.ReplaceOneAsync(filter, cart, new ReplaceOptions { IsUpsert = true });
+
+            // Prepare update definition for all fields
+            var update = Builders<Cart>.Update
+                .Set(c => c.UserId, cart.UserId)
+                .Set(c => c.Books, cart.Books)
+                .Set(c => c.TotalPrice, cart.TotalPrice)
+                .Set(c => c.TotalQuantity, cart.TotalQuantity);
+
+            // Perform upsert operation
+            var result = await _cartCollection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
+
+            // Enhanced condition to validate operation success
+            if (result.MatchedCount == 0 && result.UpsertedId == BsonValue.Create(null))
+            {
+                throw new Exception($"No cart updated or inserted for UserId {cart.UserId}.");
+            }
+
+            // Logging for debugging purposes
+            if (result.UpsertedId != BsonValue.Create(null))
+            {
+                Console.WriteLine($"New cart created for UserId {cart.UserId} with ID {result.UpsertedId}.");
+            }
+            else if (result.ModifiedCount > 0)
+            {
+                Console.WriteLine($"Cart updated for UserId {cart.UserId}.");
+            }
+            else
+            {
+                Console.WriteLine($"No changes were made to the cart for UserId {cart.UserId}.");
+            }
         }
+
+
+
 
         public async Task DeleteCartAsync(string cartId)
         {

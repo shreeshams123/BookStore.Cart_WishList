@@ -1,38 +1,43 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
-namespace BookStore.Cart_WishList.Services
+public class TokenService
 {
-    public class TokenService
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<TokenService> _logger;
+
+    public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ILogger<TokenService> logger)
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+        _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
+    }
 
-        public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+    public int GetUserIdFromToken()
+    {
+        try
         {
-            _configuration = configuration;
-            _httpContextAccessor = httpContextAccessor;
+            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                _logger.LogError("UserId claim is missing or empty.");
+                throw new UnauthorizedAccessException();
+            }
+
+            _logger.LogInformation("UserId claim found: " + userIdClaim);
+            return int.Parse(userIdClaim);
         }
-        public int GetUserIdFromToken()
+        catch (SecurityTokenExpiredException ex)
         {
-            try
-            {
-
-                var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
-
-                if (string.IsNullOrEmpty(userIdClaim))
-                {
-                    throw new UnauthorizedAccessException();
-                }
-
-                return int.Parse(userIdClaim);
-            }
-            catch (SecurityTokenExpiredException)
-            {
-                throw new SecurityTokenExpiredException("Token has expired.");
-            }
-
+            _logger.LogError("Token expired: " + ex.Message);
+            throw new SecurityTokenExpiredException("Token has expired.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error extracting user ID from token: " + ex.Message);
+            throw;
         }
     }
 }

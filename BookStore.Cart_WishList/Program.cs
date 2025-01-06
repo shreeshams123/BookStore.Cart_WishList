@@ -20,7 +20,16 @@ builder.Services.AddScoped<IExternalService,ExternalService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.WithOrigins("http://localhost:4200")
+              .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials(); ;
+    });
+});
 
 builder.Services.AddAuthentication(options =>
 {
@@ -112,18 +121,29 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
-//var mongoDbService = app.Services.GetRequiredService<MongoDbService>();
 
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:4200");
+        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        context.Response.StatusCode = 204;
+        return;
+    }
+    await next();
+});
+
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowAll");
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -65,8 +65,9 @@ namespace BookStore.Cart_WishList.Services
             {
                 return new Apiresponse<List<WishListItemDto>>
                 {
-                    Success = false,
-                    Message = "No items found in the wishlist."
+                    Success = true,
+                    Message = "No items found in the wishlist.",
+                    Data= new List<WishListItemDto>()
                 };
             }
 
@@ -80,9 +81,9 @@ namespace BookStore.Cart_WishList.Services
                     wishListItemDtos.Add(new WishListItemDto
                     {
                         BookId = book.BookId,
-                        BookName = book.Title,
+                        title = book.Title,
                         Description = book.Description,
-                        BookImage = book.Image,
+                        Image = book.Image,
                         Author = book.Author,
                         Price = book.Price
                     });
