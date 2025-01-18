@@ -48,7 +48,7 @@ namespace BookStore.Cart_WishList.Controllers
             Console.WriteLine("Called fetch items");
             Console.WriteLine($"Authorization Header: {Request.Headers["Authorization"]}");
             var result = await _cartService.GetAllItemsFromCartAsync();
-            if (result.Success)
+            if (result != null && result.Success)
             {
                 return Ok(result);
             }

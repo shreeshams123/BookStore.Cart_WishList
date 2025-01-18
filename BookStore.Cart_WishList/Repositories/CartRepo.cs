@@ -18,7 +18,12 @@ namespace BookStore.Cart_WishList.Repositories
         }
         public async Task<Cart> GetCartByUserIdAsync(int userId)
         {
-            return await _cartCollection.Find(c => c.UserId == userId).FirstOrDefaultAsync();
+            var filter = Builders<BookStore.Cart_WishList.Model.Entities.Cart>.Filter.Eq(c => c.UserId, userId);
+            var findFluent = _cartCollection.Find(filter);
+
+            // Manually implement behavior of FirstOrDefaultAsync here
+            var cart = await findFluent.FirstOrDefaultAsync();
+            return cart;
         }
 
         public async Task SaveCartAsync(Cart cart)

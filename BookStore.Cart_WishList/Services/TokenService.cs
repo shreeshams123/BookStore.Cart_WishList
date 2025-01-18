@@ -1,7 +1,8 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using BookStore.Cart_WishList.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 
-public class TokenService
+public class TokenService:ITokenService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IConfiguration _configuration;
@@ -14,7 +15,7 @@ public class TokenService
         _logger = logger;
     }
 
-    public int GetUserIdFromToken()
+    public virtual int GetUserIdFromToken()
     {
         try
         {
